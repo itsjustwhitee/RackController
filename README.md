@@ -50,6 +50,7 @@ This version introduces persistent memory for settings, a dynamic web-based curv
 
 <p align='center'>
    <img width="50%" alt="Circuit Scheme" src="assets/circuit_image.png" />
+   <br/>
    <i>Circuit Scheme</i>
 </p>
 
@@ -59,6 +60,7 @@ The system follows a 3-stage automatic logic to balance silence and performance:
 
 <p align='center'>
    <img width="50%" alt="Graph Example (28°C-35°C-55°C)" src="assets/graph.png" />
+   <br/>
    <i>Graph Example (28°C-35°C-55°C)</i>
 </p>
 
@@ -77,7 +79,8 @@ The system follows a 3-stage automatic logic to balance silence and performance:
 * **🛜 WiFi Setup**: Change network credentials and reboot the device remotely.
 
 <p align='center'>
-   <img width="30%" alt="Web Interface" src="assets/web-interface.png" />
+   <img width="30%" alt="Web Interface" src="assets/web_interface.png" />
+   <br/>
    <i>Web Interface</i>
 </p>
 
@@ -108,7 +111,8 @@ The display retains the original high-readability layout:
     *Note: Change also pin numbers if you used different ones.*
 6.  Select your board (e.g., `ESP32S3 Dev Module`) and Flash it.
     <p align='center'>
-      <img width="30%" alt="My Configuration" src="assets/configuration.png" />
+       <img width="30%" alt="My Configuration" src="assets/configuration.png" />
+       <br/>
        <i>My configuration for **ESP32-S3 N8R2**</i>
    </p>
    *Note:* Use the right COM port.
