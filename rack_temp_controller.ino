@@ -15,15 +15,15 @@
 #define PIN_SCL_OLED     2   
 #define OLED_ADDRESS 0x3C
 
-// --- COSTANTI FISSE ---
-const int PWM_STARTUP = 30; // ~12% - Valore minimo per evitare lo stallo fisico
+// --- COSTANTS ---
+const int PWM_STARTUP = 26; // ~10% - Minimum value to avoid stalls
 
-// --- CONFIGURAZIONE ---
+// --- CONFIGURATION ---
 float tempOff, tempRampStart, tempMax;
-int offsetDurMin = 60; // Durata timer non persistente
+int offsetDurMin = 60; // Timer duration
 char wifiSSID[33], wifiPass[65];
 
-// --- STATO ---
+// --- STATE ---
 float currentTemp = 0.0;
 int currentPWM = 0;
 int currentPercent = 0;
@@ -38,7 +38,7 @@ Adafruit_SSD1306 display(128, 64, &Wire, -1);
 OneWire oneWire(PIN_TEMP_SENSOR);
 DallasTemperature sensors(&oneWire);
 
-// --- FUNZIONI DI SUPPORTO ---
+// --- SUPPORT FUNCTIONS ---
 void setContrast(int contrast) {
   display.ssd1306_command(SSD1306_SETCONTRAST);
   display.ssd1306_command(contrast);
@@ -63,7 +63,7 @@ void saveSettings() {
   prefs.end();
 }
 
-// --- PAGINA WEB ---
+// --- WEB PAGE ---
 void handleRoot() {
   String html = "<html><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'>";
   html += "<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css'>";
@@ -211,7 +211,7 @@ void loop() {
     ledcWrite(0, currentPWM);
   #endif
 
-  // --- OLED (LAYOUT ORIGINALE) ---
+  // --- OLED ---
   display.clearDisplay();
   display.setTextColor(SSD1306_WHITE);
   if (isNight) setContrast(10); else setContrast(255);
