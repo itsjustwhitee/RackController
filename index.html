@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rack Control</title>
+    
+    <!-- Favicon a forma di ventola grigia -->
+    <link rel="icon" href="assets/fan-solid-full.svg" type="image/svg+xml">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root { 
+            --bg: #121212; 
+            --card: #1e1e1e; 
+            --card-hover: #252525;
+            --text: #e0e0e0; 
+            --text-muted: #888;
+            
+            /* Nuovi Colori */
+            --accent: #00bbc9; 
+            --accent-dark: #094f4f; 
+            
+            --danger: #F44336; 
+            --success: #094f4f; /* Usato per i tasti save generici */
+            --success-hover: #00bbc9;
+            --warning: #FF9800;
+        }
+        
+        body { 
+            font-family: 'Segoe UI', Roboto, Helvetica, sans-serif; 
+            background: var(--bg); 
+            color: var(--text); 
+            padding: 15px; 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        }
+        
+        .container { max-width: 550px; width: 100%; }
+        
+        /* Cards */
+        .card { 
+            background: var(--card); 
+            border-radius: 16px; 
+            padding: 20px; 
+            margin-bottom: 20px; 
+            border: 1px solid #333; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4); 
+        }
+        
+        h3 { 
+            margin-top: 0; 
+            color: var(--text-muted); 
+            font-weight: 600; 
+            font-size: 0.85rem; 
+            text-transform: uppercase; 
+            letter-spacing: 1.5px; 
+            margin-bottom: 15px;
+        }
+        
+        /* Stats Header */
+        .stats { display: flex; justify-content: space-around; align-items: center; text-align: center; margin: 10px 0; }
+        .stat-val { 
+            font-size: 2.8rem; 
+            font-weight: 700; 
+            line-height: 1; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+        }
+        .stat-label { color: var(--text-muted); font-size: 0.85rem; margin-top: 5px; }
+        
+        /* Badges */
+        .badges { display: flex; gap: 8px; justify-content: center; margin-bottom: 5px; min-height: 24px;}
+        .badge { 
+            padding: 4px 12px; 
+            border-radius: 20px; 
+            font-size: 0.7rem; 
+            font-weight: 700; 
+            display: none; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .badge.on { display: inline-flex; align-items: center; gap: 5px; }
+        
+        /* Colori Badges Modalità */
+        .bg-night { background: linear-gradient(135deg, #673AB7, #512DA8); color: white; }
+        .bg-zdb { background: linear-gradient(135deg, #90CAF9, #42A5F5); color: #000; } /* Azzurro pastello tenue */
+        
+        /* Buttons */
+        .btn-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        .btn { 
+            border: none; 
+            padding: 12px 0; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            color: white; 
+            flex: 1; 
+            font-size: 0.95rem; 
+            transition: all 0.2s ease;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn:active { transform: scale(0.96); }
+        .btn-blue { background: var(--accent); color: #000; } /* Testo scuro per miglior contrasto col cyan */
+        .btn-red { background: var(--danger); }
+        .btn-grey { background: #333; color: #aaa; }
+        .btn-grey:hover { background: #444; color: #fff; }
+        
+        .btn-outline { 
+            background: transparent; 
+            border: 2px solid #444; 
+            color: #ccc; 
+            width: 40px; height: 40px; 
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem;
+            transition: 0.2s;
+        }
+        .btn-outline:active { background: #444; border-color: var(--accent); color: var(--accent); }
+
+        /* Manual Offset Section */
+        .offset-control {
+            background: var(--card-hover);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .offset-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            width: 100%;
+        }
+        .offset-val {
+            font-size: 1.5rem; 
+            font-weight: bold; 
+            min-width: 70px; 
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+        }
+        .btn-reset {
+            background: #3a1c1c;
+            color: #ff6b6b;
+            border: 1px solid #ff6b6b;
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            margin-top: 8px;
+            display: none;
+            align-items: center; gap: 5px;
+            transition: 0.2s;
+        }
+        .btn-reset:hover { background: #ff6b6b; color: white; }
+        .btn-reset.show { display: inline-flex; }
+
+        /* Inputs & Units */
+        .input-wrap { display: flex; align-items: center; gap: 8px; }
+        .unit-label { font-size: 0.8rem; color: #666; font-weight: bold; min-width: 32px; }
+        
+        input[type=number] { 
+            background: #2a2a2a; 
+            border: 1px solid #444; 
+            color: white; 
+            padding: 8px; 
+            border-radius: 6px; 
+            width: 60px; 
+            text-align: center; 
+            font-weight: bold; 
+            font-family: inherit;
+        }
+        input[type=number]:focus { outline: 2px solid var(--accent); border-color: transparent; }
+
+        /* Graph */
+        canvas { 
+            background: #161616; 
+            border: 1px solid #333; 
+            border-radius: 10px; 
+            width: 100%; 
+            height: 180px; 
+            margin-bottom: 15px; 
+        }
+        
+        /* Lists & toggles */
+        .setting-row { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 12px 0;
+            border-bottom: 1px solid #333;
+        }
+        .setting-row:last-child { border-bottom: none; }
+        
+        .setting-col { display: flex; flex-direction: column; }
+        .setting-title { font-weight: 500; font-size: 0.95rem; }
+        .setting-desc { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            width: 46px; height: 24px;
+        }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #444; border-radius: 24px;
+            transition: .4s;
+        }
+        .slider:before {
+            position: absolute; content: "";
+            height: 18px; width: 18px;
+            left: 3px; bottom: 3px;
+            background-color: white; border-radius: 50%;
+            transition: .4s;
+        }
+        input:checked + .slider { background-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(22px); }
+
+        #in-nEn:checked + .slider { background-color: #673AB7; }
+
+        /* Night Mode Sub-settings */
+        .sub-settings {
+            background: rgba(103, 58, 183, 0.1); 
+            margin-top: 10px;
+            border-radius: 10px;
+            padding: 15px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            border: 1px solid #333;
+            opacity: 0.5; pointer-events: none;
+            transition: 0.3s;
+        }
+        .sub-settings.active { 
+            opacity: 1; 
+            pointer-events: all; 
+            border-color: #673AB7;
+            box-shadow: 0 0 15px rgba(103, 58, 183, 0.15);
+        }
+        
+        .sub-field label { display: block; font-size: 0.75rem; color: #aaa; margin-bottom: 5px; }
+        .sub-field .input-wrap input { flex: 1; width: 100%; box-sizing: border-box; background: #1e1e1e; border-color: #444; }
+        .sub-settings.active input[type=number]:focus { outline: 2px solid #673AB7; border-color: transparent; }
+
+        .save-btn {
+            width: 100%;
+            margin-top: 15px;
+            padding: 12px;
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: 0.3s;
+        }
+        .save-btn:hover { background: var(--success-hover); color: #000; }
+        
+        /* Modificatore ventola animata */
+        #icon-fan { margin-right: 12px; font-size: 2.2rem; color: #888; transition: color 0.3s; }
+        #icon-fan.running { color: var(--accent); }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="card">
+        <div class="badges">
+            <span id="badge-night" class="badge bg-night"><i class="fa-solid fa-moon"></i> Night</span>
+            <span id="badge-zdb" class="badge bg-zdb"><i class="fa-solid fa-volume-xmark"></i> Zero dB</span>
+        </div>
+
+        <div class="stats">
+            <!-- Temperatura -->
+            <div>
+                <div class="stat-val" style="color:var(--accent)">
+                    <span id="val-temp">--</span><span style="font-size:1.5rem">°C</span>
+                </div>
+                <div class="stat-label">Temperature</div>
+            </div>
+            
+            <!-- Ventola -->
+            <div>
+                <div class="stat-val">
+                    <i class="fa-solid fa-fan" id="icon-fan"></i>
+                    <span id="val-fan">--</span><span style="font-size:1.5rem">%</span>
+                </div>
+                <div class="stat-label">
+                    Fan Speed 
+                    <span id="val-pwm" style="color: #666; font-size: 0.75rem; margin-left: 5px; font-family: monospace;">(PWM: --)</span>
+                </div>
+            </div>
+        </div>
+        <div style="text-align: center; color: var(--text-muted); font-size: 0.75rem; margin-top:5px;" id="status-text">Connecting...</div>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="card">
+        <h3>Operating Mode</h3>
+        <div class="btn-group">
+            <button onclick="sendCmd('update?m=AUTO')" class="btn" id="btn-auto"><i class="fa-solid fa-robot"></i> AUTO</button>
+            <button onclick="sendCmd('update?m=OFF')" class="btn" id="btn-off"><i class="fa-solid fa-power-off"></i> OFF</button>
+            <button onclick="sendCmd('update?m=MAX')" class="btn" id="btn-max"><i class="fa-solid fa-wind"></i> MAX</button>
+        </div>
+        
+        <div class="offset-control">
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Manual Offset</div>
+            <div class="offset-row">
+                <button onclick="sendCmd('update?sub=1')" class="btn-outline"><i class="fa-solid fa-minus"></i></button>
+                <div class="offset-val" id="val-offset">0%</div>
+                <button onclick="sendCmd('update?add=1')" class="btn-outline"><i class="fa-solid fa-plus"></i></button>
+            </div>
+            
+            <div id="timer-disp" style="color: var(--warning); font-size: 0.8rem; margin-top: 8px; min-height: 18px; font-weight: 500;"></div>
+            
+            <button onclick="sendCmd('update?reset=1')" class="btn-reset" id="btn-reset">
+                <i class="fa-solid fa-xmark"></i> Cancel Offset
+            </button>
+        </div>
+    </div>
+
+    <!-- GRAPH -->
+    <div class="card">
+        <h3>Curve Configuration</h3>
+        <canvas id="fanCurve"></canvas>
+        
+        <div class="setting-row">
+            <div class="setting-col">
+                <div class="setting-title">Stop Threshold</div>
+                <div class="setting-desc">Below this temp, fan stops</div>
+            </div>
+            <div class="input-wrap">
+                <input type="number" id="in-tOff" step="0.5" oninput="drawGraph()">
+                <span class="unit-label">°C</span>
+            </div>
+        </div>
+        <div class="setting-row">
+            <div class="setting-col">
+                <div class="setting-title">Ramp Start</div>
+                <div class="setting-desc">Temp where fan starts ramping up</div>
+            </div>
+            <div class="input-wrap">
+                <input type="number" id="in-tRamp" step="0.5" oninput="drawGraph()">
+                <span class="unit-label">°C</span>
+            </div>
+        </div>
+        <div class="setting-row">
+            <div class="setting-col">
+                <div class="setting-title">Max Speed</div>
+                <div class="setting-desc">Temp for 100% fan speed</div>
+            </div>
+            <div class="input-wrap">
+                <input type="number" id="in-tMax" step="0.5" oninput="drawGraph()">
+                <span class="unit-label">°C</span>
+            </div>
+        </div>
+
+        <button onclick="uploadConfig()" class="save-btn">Save Curve</button>
+    </div>
+
+    <!-- ADVANCED -->
+    <div class="card">
+        <h3>Advanced Settings</h3>
+        
+        <!-- Night Mode Section -->
+        <div style="margin-bottom: 20px;">
+            <div class="setting-row" style="border-bottom: none;">
+                <div class="setting-col">
+                    <div class="setting-title"><i class="fa-solid fa-moon" style="color:#9575cd"></i> Night Mode</div>
+                    <div class="setting-desc">Reduces speed between 23:00 - 07:00</div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="in-nEn" onchange="toggleNightSettings()">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <!-- Grouped Night Settings -->
+            <div class="sub-settings" id="night-settings">
+                <div class="sub-field">
+                    <label>MAX LIMIT</label>
+                    <div class="input-wrap">
+                        <input type="number" id="in-nMax" placeholder="0-100">
+                        <span class="unit-label">%</span>
+                    </div>
+                </div>
+                <div class="sub-field">
+                    <label>SPEED REDUCTION</label>
+                    <div class="input-wrap">
+                        <input type="number" id="in-nOff" placeholder="0-100">
+                        <span class="unit-label">%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Zero dB Section -->
+        <div class="setting-row">
+            <div class="setting-col">
+                <div class="setting-title"><i class="fa-solid fa-volume-xmark" style="color:#42A5F5"></i> Zero dB Mode</div>
+                <div class="setting-desc">Force OFF if cold, ignoring manual offset</div>
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox" id="in-zEn">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <!-- Timer Duration -->
+        <div class="setting-row">
+            <div class="setting-col">
+                <div class="setting-title">Timer Duration</div>
+                <div class="setting-desc">Minutes before manual offset resets</div>
+            </div>
+            <div class="input-wrap">
+                <input type="number" id="in-dur">
+                <span class="unit-label">min</span>
+            </div>
+        </div>
+
+        <button onclick="uploadConfig()" class="save-btn" style="background: var(--accent-dark);">Save Advanced</button>
+    </div>
+
+</div>
+
+<script>
+    // --- CANVAS GRAPH LOGIC ---
+    const canvas = document.getElementById('fanCurve');
+    const ctx = canvas.getContext('2d');
+    
+    // High DPI fix
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+
+    function drawGraph() {
+        const width = rect.width;
+        const height = rect.height;
+        const pad = 35; 
+        
+        const tOff = parseFloat(document.getElementById('in-tOff').value) || 30;
+        const tSta = parseFloat(document.getElementById('in-tRamp').value) || 40;
+        const tMax = parseFloat(document.getElementById('in-tMax').value) || 55;
+        const currentT = parseFloat(document.getElementById('val-temp').innerText);
+
+        let lowestParam = Math.min(tOff, tSta, tMax);
+        let highestParam = Math.max(tOff, tSta, tMax);
+        
+        let minX = Math.floor(lowestParam / 10) * 10 - 10;
+        let maxX = Math.ceil(highestParam / 10) * 10 + 10;
+
+        if (!isNaN(currentT) && currentT > -50 && currentT < 150) {
+            if (currentT <= minX) minX = Math.floor(currentT / 10) * 10 - 10;
+            if (currentT >= maxX) maxX = Math.ceil(currentT / 10) * 10 + 10;
+        }
+
+        if(maxX <= minX) maxX = minX + 20;
+
+        const getX = (t) => pad + ((t - minX) / (maxX - minX)) * (width - 2 * pad);
+        const getY = (p) => height - pad - (p / 100) * (height - 2 * pad);
+
+        ctx.clearRect(0, 0, width, height);
+        
+        // Grid
+        ctx.strokeStyle = '#333'; ctx.lineWidth = 1; ctx.beginPath();
+        let xStep = (maxX - minX > 80) ? 20 : 10; 
+        
+        for(let i=minX; i<=maxX; i+=xStep) { ctx.moveTo(getX(i), getY(0)); ctx.lineTo(getX(i), getY(100)); }
+        for(let i=0; i<=100; i+=25) { ctx.moveTo(getX(minX), getY(i)); ctx.lineTo(getX(maxX), getY(i)); }
+        ctx.stroke();
+
+        // Labels
+        ctx.fillStyle = '#666'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center';
+        for(let i=minX; i<=maxX; i+=xStep) ctx.fillText(i+'°', getX(i), height - 10);
+        
+        ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+        ctx.fillText('100%', pad - 8, getY(100));
+        ctx.fillText('0%', pad - 8, getY(0));
+
+        // Curve (Aggiornata con il nuovo colore accent)
+        ctx.strokeStyle = '#00bbc9'; ctx.lineWidth = 3; ctx.lineJoin = 'round';
+        ctx.beginPath();
+        ctx.moveTo(getX(minX), getY(0));
+        ctx.lineTo(getX(tOff), getY(0));
+        ctx.lineTo(getX(tOff), getY(10)); 
+        ctx.lineTo(getX(tSta), getY(10)); 
+        ctx.lineTo(getX(tMax), getY(100)); 
+        ctx.lineTo(getX(maxX), getY(100)); 
+        ctx.stroke();
+
+        // Dot (Aggiornato con il nuovo colore)
+        if(!isNaN(currentT) && currentT >= minX && currentT <= maxX) {
+            const x = getX(currentT);
+            let yPct = 0;
+            if(currentT < tOff) yPct = 0;
+            else if(currentT < tSta) yPct = 10;
+            else if(currentT >= tMax) yPct = 100;
+            else yPct = 10 + ((currentT - tSta) / (tMax - tSta)) * 90;
+
+            const y = getY(yPct);
+            
+            const grad = ctx.createRadialGradient(x, y, 2, x, y, 10);
+            grad.addColorStop(0, 'white');
+            grad.addColorStop(1, 'rgba(0, 187, 201, 0)');
+            ctx.fillStyle = grad;
+            ctx.beginPath(); ctx.arc(x, y, 10, 0, Math.PI*2); ctx.fill();
+            
+            ctx.fillStyle = '#fff';
+            ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI*2); ctx.fill();
+        }
+    }
+
+    // --- API & LOGIC ---
+
+    function getUrl(path) {
+        return window.location.origin + '/api/' + path;
+    }
+
+    function sendCmd(cmd) {
+        fetch(getUrl(cmd)).then(fetchData);
+    }
+
+    function uploadConfig() {
+        const params = new URLSearchParams();
+        params.append('tOff', document.getElementById('in-tOff').value);
+        params.append('tRamp', document.getElementById('in-tRamp').value);
+        params.append('tMax', document.getElementById('in-tMax').value);
+        params.append('dur', document.getElementById('in-dur').value);
+        params.append('nEn', document.getElementById('in-nEn').checked ? '1' : '0');
+        params.append('zEn', document.getElementById('in-zEn').checked ? '1' : '0');
+
+        // Conversion % -> PWM
+        let maxPct = parseFloat(document.getElementById('in-nMax').value) || 0;
+        let offPct = parseFloat(document.getElementById('in-nOff').value) || 0;
+        let nMaxPwm = Math.round((maxPct / 100) * 255);
+        let nOffPwm = Math.round((offPct / 100) * 255);
+        
+        nMaxPwm = Math.max(0, Math.min(255, nMaxPwm));
+        nOffPwm = Math.max(0, Math.min(255, nOffPwm));
+
+        params.append('nMax', nMaxPwm);
+        params.append('nOff', nOffPwm);
+
+        fetch(getUrl('update?' + params.toString())).then(r => {
+            if(r.ok) {
+                const btn = document.activeElement;
+                const oldText = btn.innerText;
+                btn.innerText = "Saved!";
+                btn.style.background = "#00bbc9";
+                btn.style.color = "#000";
+                setTimeout(() => { 
+                    btn.innerText = oldText; 
+                    btn.style.background = ""; 
+                    btn.style.color = "";
+                    fetchData(); 
+                }, 1500);
+            }
+        });
+    }
+    
+    function toggleNightSettings() {
+        const isActive = document.getElementById('in-nEn').checked;
+        const panel = document.getElementById('night-settings');
+        if(isActive) panel.classList.add('active');
+        else panel.classList.remove('active');
+    }
+
+    let firstLoad = true;
+
+    function fetchData() {
+        fetch(getUrl('json'))
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('val-temp').innerText = data.temp;
+                document.getElementById('val-fan').innerText = data.pct;
+                document.getElementById('val-pwm').innerText = `(PWM: ${data.pwm})`;
+                
+                // Icona Ventola Animata
+                const fanIcon = document.getElementById('icon-fan');
+                if (data.pct > 0) {
+                    fanIcon.classList.add('fa-spin', 'running');
+                    // Velocità dinamica: 100% = 0.5 sec per giro, 10% = 3 sec per giro
+                    let spinSpeed = 3 - (data.pct / 100) * 2.5;
+                    fanIcon.style.animationDuration = `${spinSpeed}s`;
+                } else {
+                    fanIcon.classList.remove('fa-spin', 'running');
+                }
+
+                // Offset Handling
+                const offsetVal = document.getElementById('val-offset');
+                const resetBtn = document.getElementById('btn-reset');
+                
+                offsetVal.innerText = (data.offset > 0 ? "+" : "") + data.offset + "%";
+                offsetVal.style.color = data.offset !== 0 ? "#FF9800" : "inherit";
+                
+                if(data.offset !== 0) resetBtn.classList.add('show');
+                else resetBtn.classList.remove('show');
+
+                document.getElementById('status-text').innerText = "ESP Online - " + data.mode;
+
+                // Buttons Active State
+                document.getElementById('btn-auto').className = data.mode === "AUTO" ? "btn btn-blue" : "btn btn-grey";
+                document.getElementById('btn-off').className = data.mode === "OFF" ? "btn btn-blue" : "btn btn-grey";
+                document.getElementById('btn-max').className = data.mode === "MAX" ? "btn btn-red" : "btn btn-grey";
+
+                // Badges
+                document.getElementById('badge-night').classList.toggle('on', data.isNight);
+                document.getElementById('badge-zdb').classList.toggle('on', data.conf.zEn);
+
+                // Timer
+                const tmr = document.getElementById('timer-disp');
+                tmr.innerText = data.rem > 0 ? `Reset in ${data.rem} min` : "";
+
+                // Populate Inputs
+                if(document.activeElement.tagName !== "INPUT" || firstLoad) {
+                    document.getElementById('in-tOff').value = data.conf.tOff;
+                    document.getElementById('in-tRamp').value = data.conf.tRamp;
+                    document.getElementById('in-tMax').value = data.conf.tMax;
+                    document.getElementById('in-dur').value = data.conf.dur;
+                    
+                    document.getElementById('in-nEn').checked = data.conf.nEn;
+                    document.getElementById('in-zEn').checked = data.conf.zEn;
+                    
+                    // Conversion PWM -> %
+                    let maxPct = Math.round((data.conf.nMax / 255) * 100);
+                    let offPct = Math.round((data.conf.nOff / 255) * 100);
+                    
+                    document.getElementById('in-nMax').value = maxPct;
+                    document.getElementById('in-nOff').value = offPct;
+                    
+                    toggleNightSettings();
+                    
+                    if(firstLoad) { drawGraph(); firstLoad = false; }
+                }
+                
+                drawGraph(); 
+            })
+            .catch(e => {
+                document.getElementById('status-text').innerText = "Connection Lost";
+                document.getElementById('status-text').style.color = "#F44336";
+            });
+    }
+
+    setInterval(fetchData, 2000);
+    window.addEventListener('resize', drawGraph);
+    window.onload = fetchData;
+</script>
+
+</body>
+</html>
