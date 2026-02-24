@@ -50,7 +50,7 @@ The frontend (`index.html`) is completely independent of the firmware. It fetche
 - Night indicator (`N`) and Zero dB indicator (`Z`) icons.
 - **Auto-Dim:** Contrast is reduced automatically during Night Mode to prevent burn-in.
 <p align='center'>
-   <img width="70%" alt="OLED Display" src="assets/display.jpg"/>
+   <img width="20%" alt="OLED Display" src="assets/display.jpg"/>
    <br/>
    <i>Display Example</i>
 </p>
