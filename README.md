@@ -1,3 +1,7 @@
+<p align='center'>
+   <img width="20%" alt="Fan" src="assets/fan-solid-full.svg" />
+</p>
+
 # RackController v3.0: Smart Cooling System (ESP32)
 
 A DIY professional-grade cooling system for home server racks or network cabinets, built with an ESP32-S3, Arctic PWM fans, and a DS18B20 temperature sensor.
@@ -45,6 +49,11 @@ The frontend (`index.html`) is completely independent of the firmware. It fetche
 - Last IP octet shown in the footer for quick browser access.
 - Night indicator (`N`) and Zero dB indicator (`Z`) icons.
 - **Auto-Dim:** Contrast is reduced automatically during Night Mode to prevent burn-in.
+<p align='center'>
+   <img width="70%" alt="OLED Display" src="assets/display.jpg"/>
+   <br/>
+   <i>Display Example</i>
+</p>
 
 ## 🛠 Hardware Required
 
@@ -236,7 +245,7 @@ Then, in Nginx Proxy Manager, add a Proxy Host pointing to `<alpine-frontend>:80
 ## 📱 Usage
 
 <p align='center'>
-   <img width="30%" alt="My Configuration" src="assets/web_interface.jpg" />
+   <img width="70%" alt="My Configuration" src="assets/web_interface.jpg" />
    <br/>
    <i>Web Interface</i>
 </p>
